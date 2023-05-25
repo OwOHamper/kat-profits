@@ -232,7 +232,7 @@ function showNotification(message) {
 
 
 function loadKatProfits() {
-  fetch('http://localhost:8000/api/kat-profits')  // Replace 'http://localhost/api' with the actual URL of your API
+  fetch('https://api.hamper.dev/skyblock/kat-profits')  // Replace 'http://localhost/api' with the actual URL of your API
     .then(response => response.json())
     .then(data => {
       console.log("test")
@@ -270,7 +270,7 @@ window.addEventListener('load', function () {
   lastUpdated.addEventListener('click', () => {
     rotateIcon.classList.add('fa-spin');
     // post request
-    fetch('http://localhost:8000/api/update-data', {
+    fetch('https://api.hamper.dev/skyblock/update-data', {
       method: 'POST',
   })
   .then(response => response.json())
