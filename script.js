@@ -1,3 +1,7 @@
+// const baseUrl = 'https://api.hamper.dev';
+const baseUrl = 'http://localhost:8000';
+
+
 function formatNumber(number) {
     // Convert the number to an integer
     const integer = parseInt(number, 10);
@@ -119,7 +123,7 @@ function createCard(test_data) {
   
     const petName = document.createElement('div');
     petName.classList.add('pet-name');
-    petName.innerHTML = `<span id="pet-name">${test_data.item}</span>`;
+    petName.innerHTML = `<span>${test_data.item}</span>`;
     cardHeader.appendChild(petName);
   
     const cardContent = document.createElement('div');
@@ -127,32 +131,40 @@ function createCard(test_data) {
   
     const profit = document.createElement('div');
     profit.classList.add('profit');
-    profit.innerHTML = `<span>Profit: </span><p id="profit">${formatNumber(test_data.profit)}</p>`;
+    profit.innerHTML = `<span>Profit: </span><p>${formatNumber(test_data.profit)}</p>`;
     cardContent.appendChild(profit);
   
     const petCost = document.createElement('div');
     petCost.classList.add('pet-cost');
-    petCost.innerHTML = `<span>Pet cost: </span><p id="cost">${formatNumber(test_data.item_cost)}</p>`;
+    petCost.innerHTML = `<span>Pet cost: </span><p>${formatNumber(test_data.item_cost)}</p>`;
     cardContent.appendChild(petCost);
   
     const upgradeCost = document.createElement('div');
     upgradeCost.classList.add('upgrade-cost');
-    upgradeCost.innerHTML = `<span>Upgrade cost: </span><p id="upgrade">${formatNumber(test_data.upgrade_cost)}</p>`;
+    upgradeCost.innerHTML = `<span>Upgrade cost: </span><p>${formatNumber(test_data.upgrade_cost)}</p>`;
     cardContent.appendChild(upgradeCost);
   
     const materialCost = document.createElement('div');
     materialCost.classList.add('material', 'cost-cost');
-    materialCost.innerHTML = `<span>Material cost: </span><p id="material">${formatNumber(test_data.material_cost)}</p>`;
+    materialCost.innerHTML = `<span>Material cost: </span><p>${formatNumber(test_data.material_cost)}</p>`;
     cardContent.appendChild(materialCost);
-  
+
+    if (test_data.kat_flowers_price != 0) {
+      const flowersPrice = document.createElement('div');
+      flowersPrice.classList.add('flowers-price');
+      flowersPrice.innerHTML = `<span>Flowers price: </span><p>${formatNumber(test_data.kat_flowers_price)}</p>`;
+      cardContent.appendChild(flowersPrice);
+    }
+
+
     const sumCost = document.createElement('div');
     sumCost.classList.add('sum-cost');
-    sumCost.innerHTML = `<span>Sum cost: </span><p id="sum">${formatNumber(test_data.sum_cost)}</p>`;
+    sumCost.innerHTML = `<span>Sum cost: </span><p>${formatNumber(test_data.sum_cost)}</p>`;
     cardContent.appendChild(sumCost);
   
     const time = document.createElement('div');
     time.classList.add('time');
-    time.innerHTML = `<span>Time: </span><p id="time">${formatTime(test_data.time)}</p>`;
+    time.innerHTML = `<span>Time: </span><p>${formatTime(test_data.time)}</p>`;
     cardContent.appendChild(time);
   
     const cardFooter = document.createElement('div');
@@ -229,18 +241,55 @@ function showNotification(message) {
   }
 
 
+function showModal(message) {
+    // Create a notification element
+    const modal = document.createElement('div');
+    notification.classList.add('modal');
+    notification.textContent = message;
+  
+    // Append the notification to the body
+    document.body.appendChild(notification);
+
+    notification.classList.add('notification-appear');
+
+  
+    // Automatically remove the notification after a certain time
+    setTimeout(() => {
+      notification.classList.remove('notification-appear');
+      notification.classList.add('notification-disappear');
+      setTimeout(() => {
+        notification.remove();
+      }, 500); // Duration of the disappear animation
+    }, 3000);
+  }
 
 
-function loadKatProfits() {
-  fetch('https://api.hamper.dev/skyblock/kat-profits')  // Replace 'http://localhost/api' with the actual URL of your API
+
+function loadKatProfits(useKatFlowers) {
+  let query;
+
+  if (useKatFlowers) {
+    query = '?use_kat_flowers=true';
+  }
+  else {
+    query = '?use_kat_flowers=false';
+  }
+
+  fetch(`${baseUrl}/skyblock/kat-profits${query}`)  // Replace 'http://localhost/api' with the actual URL of your API
     .then(response => response.json())
     .then(data => {
-      console.log("test")
 
         const profits = data.profits;
         const cardContainer = document.getElementById('card-container'); // Replace 'card-container' with the actual ID of the container element for the cards
         const timeSpan = document.getElementById('time-string');
-    
+        const katFlowerPrice = document.getElementById('kat-flower-price-text');
+
+        katFlowerPrice.textContent = `Kat flower price: ${formatNumber(data.kat_flower_price)}`;
+
+        // Remove all existing cards
+        while (cardContainer.firstChild) {
+          cardContainer.removeChild(cardContainer.firstChild);
+        }
     
         // Remove the original card
         const slicedData = profits.slice(0, 100);
@@ -261,16 +310,26 @@ function loadKatProfits() {
     .catch(error => console.error(error));
 }
 
-data = loadKatProfits();
+
+
 
 
 window.addEventListener('load', function () {
+  katFlowerCheckbox = document.getElementById('kat-flower-checkbox');
+  katFlowerCheckbox.addEventListener('change', () => {
+    // refresh website
+    loadKatProfits(katFlowerCheckbox.checked);
+  });
+
+  data = loadKatProfits(katFlowerCheckbox.checked);
+
+
   const lastUpdated = document.getElementById('lastUpdatedButton');
   const rotateIcon = document.getElementById('rotate-icon');
   lastUpdated.addEventListener('click', () => {
     rotateIcon.classList.add('fa-spin');
     // post request
-    fetch('https://api.hamper.dev/skyblock/update-data', {
+    fetch(`${baseUrl}/skyblock/update-data`, {
       method: 'POST',
   })
   .then(response => response.json())
