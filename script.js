@@ -1,5 +1,5 @@
-// const baseUrl = 'https://api.hamper.dev';
-const baseUrl = 'http://localhost:8000';
+const baseUrl = 'https://api.hamper.dev';
+// const baseUrl = 'http://localhost:8000';
 
 
 function formatNumber(number) {
